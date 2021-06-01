@@ -1,21 +1,15 @@
 import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
-import createSagaMiddleware from "redux-saga";
-import { createWrapper } from "next-redux-wrapper";
-import reducer from "./rootReducere";
-import rootSaga from "../saga/rootSaga";
+import createSagaMiddleware from 'redux-saga'
+import rootSaga from '../saga/rootSaga'
+import postsReducer from './slices/posts'
 
-const debug = process.env.NODE_ENV === "development";
+const sagaMiddleware = createSagaMiddleware()
 
-// create a makeStore function
-const makeStore = (preloadedState) => {
-    // 1: Create the middleware
-    const sagaMiddleware = createSagaMiddleware();
-
-    // 2: Add an extra parameter for applying middleware:
-    const store = configureStore({
-        reducer,
-        preloadedState,
-        middleware: [
+const store = configureStore({
+    reducer: {
+        posts: postsReducer,
+    },
+    middleware: [
             ...getDefaultMiddleware({
                 thunk: true,
                 serializableCheck: false,
@@ -23,16 +17,11 @@ const makeStore = (preloadedState) => {
             }),
             sagaMiddleware,
         ],
-        devTools: debug,
-    });
+    devTools: process.env.NODE_ENV !== 'production',
+    // preloadedState,
+    // enhancers: [reduxBatch],
+})
 
-    // 3: Run your sagas on server
-    store.sagaTask = sagaMiddleware.run(rootSaga);
+store.sagaTask = sagaMiddleware.run(rootSaga);
 
-    // 4: now return the store:
-    return store;
-};
-
-const wrapper = createWrapper(makeStore, { debug: false });
-
-export default wrapper;
+export default store

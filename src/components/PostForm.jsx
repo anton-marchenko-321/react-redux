@@ -1,86 +1,45 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {connect} from 'react-redux'
 import {createPost} from "../redux/actions";
+import {reduxForm, Field} from "redux-form";
+import {useDispatch, useSelector} from "react-redux";
+import {postsRequested} from "../redux/slices/posts";
 
 
+const LoginForm = props => {
+    const dispatch = useDispatch()
+    const posts = useSelector(state => state.posts.collection)
 
-class PostForm extends React.Component {
-    constructor(props) {
-        super(props);
+    useEffect(() => {
+        dispatch(postsRequested())
+    }, [])
 
-        this.state = {
-            title: '',
-            content: '',
-            loading: true,
-            error: false
-        }
-    }
-
-    submitHandler = event => {
-        event.preventDefault();
-        const {title} = this.state
-        const {content} = this.state
-
-
-        if( !title.trim() || !content.trim() ) {
-            return
-        }
-        const newPost = {
-            content, title, id: Date.now().toString(),
-        }
-
-        this.props.createPost(newPost)
-        this.setState({title: ''})
-        this.setState({content: ''})
-    }
-
-
-    changeInputHandler = event => {
-        event.persist()
-        this.setState(prev => ({...prev, ...{
-            [event.target.name]: event.target.value
-        }}))
-    }
-
-    render() {
-        return (
-            <>
-                <form onSubmit={this.submitHandler}>
-                    <div className='form-group'>
-                        <input
-                            type='text'
-                            className='form-control'
-                            placeholder='Ваше имя'
-                            id='title'
-                            value={this.state.title}
-                            name='title'
-                            onChange={this.changeInputHandler}
-                        />
-                    </div>
-
-                </form>
-
-                <form onSubmit={this.submitHandler}>
-                    <div className='form-group mt-3'>
-                        <input
-                            type='text'
-                            className='form-control'
-                            placeholder='Сообщение'
-                            id='content'
-                            value={this.state.content}
-                            name='content'
-                            onChange={this.changeInputHandler}
-                        />
-                    </div>
-                    <button className='btn btn-success mt-3 mb-2' type='submit'>Отправить</button>
-                </form>
-            </>
-
-
-        )
-    }
+    const { handleSubmit } = props
+    return (
+        <form onSubmit={handleSubmit}>
+            <div>
+                <Field className='form-control mt-4' name='login' placeholder="Username" component='input' type='text'/>
+            </div>
+            <div>
+                <Field className='form-control mt-3' name='message' placeholder="Press message" component='input' type='text'/>
+            </div>
+            <div>
+                <button className='btn btn-success mt-3'>Send message</button>
+            </div>
+        </form>
+    )
 }
 
+const LoginReduxForm = reduxForm({
+    form: 'login'
+}) (LoginForm)
+
+const PostForm = props => {
+    return <div>
+        <h3>Комментарий</h3>
+        <LoginReduxForm />
+    </div>
+}
 
 
 const mapDispatchToProps = {
